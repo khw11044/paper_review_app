@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LLM Paper Review for Arobot{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">LLM Paper Review for Arobot</a>
+            <nav>
+                <ul class="flex items-center space-x-6">
+                    <li><a href="/" class="hover:text-indigo-200 transition">홈</a></li>
+                    {% if request.cookies.get("access_token") %}
+                    <li><a href="/mypage" class="hover:text-indigo-200 transition">마이페이지</a></li>
+                    <li><a href="/paper/review" class="hover:text-indigo-200 transition">논문 읽기</a></li>
+                    <li><a href="/auth/logout" class="hover:text-indigo-200 transition">로그아웃</a></li>
+                    {% else %}
+                    <li><a href="/login" class="hover:text-indigo-200 transition">로그인</a></li>
+                    <li><a href="/register" class="hover:text-indigo-200 transition">회원가입</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Common JS -->
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
