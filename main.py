@@ -55,14 +55,14 @@ async def mypage(request: Request, db: Session = Depends(get_db)):
         "papers": papers
     })
 
-@app.get("/paper/review", response_class=HTMLResponse)
+@app.get("/paper/review-page", response_class=HTMLResponse)
 async def paper_review(request: Request, db: Session = Depends(get_db)):
-    """논문 리뷰 페이지 렌더링"""
     user = await auth_utils.get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     
     return templates.TemplateResponse("paper_review.html", {"request": request, "user": user})
+
 
 @app.get("/paper/{paper_id}", response_class=HTMLResponse)
 async def view_paper(request: Request, paper_id: int, db: Session = Depends(get_db)):
