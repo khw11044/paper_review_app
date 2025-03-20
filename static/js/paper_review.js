@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
         showApiKeyWarning();
     }
     
-    // 탭 전환 기능
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
+    // 왼쪽 탭 전환 기능
+    const leftTabButtons = document.querySelectorAll('.left-tab-button');
+    const leftTabContents = document.querySelectorAll('.left-tab-content');
     
-    tabButtons.forEach(button => {
+    leftTabButtons.forEach(button => {
         button.addEventListener('click', () => {
             // 활성 탭 버튼 스타일 변경
-            tabButtons.forEach(btn => {
+            leftTabButtons.forEach(btn => {
                 btn.classList.remove('border-indigo-600', 'text-indigo-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
@@ -21,9 +21,36 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 탭 콘텐츠 전환
             const tabId = button.getAttribute('data-tab');
-            tabContents.forEach(content => {
+            leftTabContents.forEach(content => {
+                content.classList.add('hidden');
                 content.classList.remove('active');
             });
+            document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+    
+    // 오른쪽 탭 전환 기능
+    const rightTabButtons = document.querySelectorAll('.right-tab-button');
+    const rightTabContents = document.querySelectorAll('.right-tab-content');
+    
+    rightTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // 활성 탭 버튼 스타일 변경
+            rightTabButtons.forEach(btn => {
+                btn.classList.remove('border-indigo-600', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            button.classList.remove('border-transparent', 'text-gray-500');
+            button.classList.add('border-indigo-600', 'text-indigo-600');
+            
+            // 탭 콘텐츠 전환
+            const tabId = button.getAttribute('data-tab');
+            rightTabContents.forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabId}-tab`).classList.remove('hidden');
             document.getElementById(`${tabId}-tab`).classList.add('active');
         });
     });
@@ -159,6 +186,12 @@ function fetchPaperData(paperId) {
         
         // 논문 데이터로 UI 업데이트
         updateUIWithPaperData(data, paperId);
+        
+        // 업로드 후 원본 탭으로 자동 전환
+        const originalTabButton = document.querySelector('.left-tab-button[data-tab="original"]');
+        if (originalTabButton) {
+            originalTabButton.click();
+        }
     })
     .catch(error => {
         console.error('Error:', error);
@@ -170,26 +203,28 @@ function fetchPaperData(paperId) {
 // UI 업데이트 함수
 function updateUIWithPaperData(paper, paperId) {
     // 원본 내용 업데이트
-    const originalContentContainer = document.querySelector('.markdown-body') || 
-                                   document.createElement('div');
-    originalContentContainer.classList.add('markdown-body');
-    originalContentContainer.innerHTML = paper.original_content || '<p>원본 내용이 없습니다.</p>';
+    const originalTab = document.getElementById('original-tab');
+    originalTab.innerHTML = `<div class="markdown-body">
+        ${paper.original_content || '<p>원본 내용이 없습니다.</p>'}
+    </div>`;
     
-    if (!document.querySelector('.markdown-body')) {
-        const originalPanel = document.querySelector('#drop-zone').parentElement;
-        originalPanel.innerHTML = '';
-        originalPanel.appendChild(originalContentContainer);
-    }
+    // 영어 요약 업데이트
+    const englishSummaryTab = document.getElementById('english-summary-tab');
+    englishSummaryTab.innerHTML = `<div class="markdown-body">
+        ${paper.english_summary || '<p>영어 요약 데이터가 없습니다.</p>'}
+    </div>`;
     
-    // 번역, 요약, 참조 업데이트
-    document.getElementById('translation-tab').innerHTML = 
-        `<div class="markdown-body">${paper.translation || '<p>번역 데이터가 없습니다.</p>'}</div>`;
+    // 번역 업데이트
+    const translationTab = document.getElementById('translation-tab');
+    translationTab.innerHTML = `<div class="markdown-body">
+        ${paper.translation || '<p>번역 데이터가 없습니다.</p>'}
+    </div>`;
     
-    document.getElementById('summary-tab').innerHTML = 
-        `<div class="markdown-body">${paper.summary || '<p>요약 데이터가 없습니다.</p>'}</div>`;
-    
-    document.getElementById('references-tab').innerHTML = 
-        `<div class="markdown-body">${paper.references || '<p>참조 데이터가 없습니다.</p>'}</div>`;
+    // 한국어 요약 업데이트
+    const koreanSummaryTab = document.getElementById('korean-summary-tab');
+    koreanSummaryTab.innerHTML = `<div class="markdown-body">
+        ${paper.korean_summary || '<p>한국어 요약 데이터가 없습니다.</p>'}
+    </div>`;
     
     // 저장 버튼 표시
     const saveButtonContainer = document.getElementById('save-button-container');
@@ -202,17 +237,17 @@ function updateUIWithPaperData(paper, paperId) {
 
 // 논문 분석 결과 저장
 function savePaperAnalysis(paperId) {
-    // 실제로는 탭에 표시된 결과를 가져와서 저장
-    const originalContent = document.querySelector('.markdown-body')?.innerHTML || '';
+    // 데이터 수집
+    const originalContent = document.querySelector('#original-tab .markdown-body')?.innerHTML || '';
+    const englishSummary = document.querySelector('#english-summary-tab .markdown-body')?.innerHTML || '';
     const translation = document.querySelector('#translation-tab .markdown-body')?.innerHTML || '';
-    const summary = document.querySelector('#summary-tab .markdown-body')?.innerHTML || '';
-    const references = document.querySelector('#references-tab .markdown-body')?.innerHTML || '';
+    const koreanSummary = document.querySelector('#korean-summary-tab .markdown-body')?.innerHTML || '';
     
     const formData = new FormData();
     formData.append('original_content', originalContent);
+    formData.append('english_summary', englishSummary);
     formData.append('translation', translation);
-    formData.append('summary', summary);
-    formData.append('references', references);
+    formData.append('korean_summary', koreanSummary);
     
     fetch(`/paper/save/${paperId}`, {
         method: 'POST',

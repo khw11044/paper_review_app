@@ -66,8 +66,8 @@ async def save_paper_analysis(
     paper_id: int,
     original_content: str = Form(...),
     translation: str = Form(None),
-    summary: str = Form(None),
-    references: str = Form(None),
+    english_summary: str = Form(None),
+    korean_summary: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """논문 분석 결과 저장"""
@@ -93,11 +93,11 @@ async def save_paper_analysis(
     if translation:
         update_data["translation"] = translation
     
-    if summary:
-        update_data["summary"] = summary
+    if english_summary:
+        update_data["english_summary"] = english_summary
     
-    if references:
-        update_data["references"] = references
+    if korean_summary:
+        update_data["korean_summary"] = korean_summary
     
     db.query(models.Paper).filter(models.Paper.id == paper_id).update(update_data)
     db.commit()
