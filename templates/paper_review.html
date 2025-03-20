@@ -125,5 +125,6 @@
     // 템플릿에서 Python 변수를 JavaScript로 전달
     const hasApiKeys = {{ has_api_keys|default('false')|tojson }};
 </script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{{ url_for('static', path='/js/paper_review.js') }}"></script>
 {% endblock %}

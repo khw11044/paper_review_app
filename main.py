@@ -10,7 +10,7 @@ from database import engine, get_db
 from routers import auth, user, paper
 import auth as auth_utils
 
-# 데이터베이스 테이블 생성
+# 데이터베이스 테이블 생성 (이미 존재하면 무시)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="LLM Paper Review for Arobot")
@@ -21,7 +21,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # 템플릿 설정
 templates = Jinja2Templates(directory="templates")
 
-# 라우터 포함
+# 각 기능별 라우터 포함
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(paper.router, prefix="/paper", tags=["paper"])
@@ -44,7 +44,7 @@ async def register_page(request: Request):
 
 @app.get("/mypage", response_class=HTMLResponse)
 async def mypage(request: Request, db: Session = Depends(get_db)):
-    """마이페이지 렌더링"""
+    """마이페이지 렌더링 - 프로필, 논문 목록, API 키 설정 등"""
     user = await auth_utils.get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
@@ -58,29 +58,34 @@ async def mypage(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/paper-review", response_class=HTMLResponse)
 async def paper_review(request: Request, db: Session = Depends(get_db)):
-    """논문 리뷰 페이지 렌더링"""
+    """논문 리뷰 페이지 렌더링 - 업로드, 원본, 영어요약, 번역, 한국어 요약 탭 구성"""
     user = await auth_utils.get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     
-    # API 키 존재 여부 확인
+    # 사용자 계정에 등록된 API 키가 모두 존재하는지 확인 (논문 분석에 필요)
     has_api_keys = bool(user.openai_api and user.upstage_api)
     
+    # 아직 분석된 논문이 없을 경우 paper를 None으로 전달
     return templates.TemplateResponse("paper_review.html", {
         "request": request, 
         "user": user,
-        "paper": None,  # 처음에는 논문이 없으므로 None으로 설정
+        "paper": None,
         "has_api_keys": has_api_keys
     })
 
 @app.get("/paper/{paper_id}", response_class=HTMLResponse)
 async def view_paper(request: Request, paper_id: int, db: Session = Depends(get_db)):
-    """저장된 논문 보기"""
+    """저장된 논문 보기 - paper_review 템플릿에서 분석 결과(마크다운 파일 경로 등)를 표시"""
     user = await auth_utils.get_current_user_from_cookie(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     
-    paper = db.query(models.Paper).filter(models.Paper.id == paper_id, models.Paper.user_id == user.id).first()
+    paper = db.query(models.Paper).filter(
+        models.Paper.id == paper_id, 
+        models.Paper.user_id == user.id
+    ).first()
+    
     if not paper:
         raise HTTPException(status_code=404, detail="Paper not found")
     
