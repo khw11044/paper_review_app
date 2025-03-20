@@ -119,6 +119,70 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 진행 상태 업데이트 함수
+let progressInterval;
+
+function startProgressAnimation() {
+    let progress = 5;
+    const progressBar = document.getElementById('progress-bar');
+    
+    progressInterval = setInterval(() => {
+        // 천천히 진행바를 증가시킴 (95%까지만)
+        if (progress < 95) {
+            progress += Math.random() * 2;
+            progressBar.style.width = `${progress}%`;
+        }
+    }, 2000);
+}
+
+function stopProgressAnimation() {
+    clearInterval(progressInterval);
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.style.width = '100%';
+    
+    // 잠시 후 100% 표시 후 초기화
+    setTimeout(() => {
+        progressBar.style.width = '5%';
+    }, 1000);
+}
+
+// PDF 처리 상태 확인 함수
+function checkPaperStatus(paperId) {
+    fetch(`/paper/status/${paperId}`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'processing') {
+            // 아직 처리 중이면 3초 후에 다시 확인
+            setTimeout(() => checkPaperStatus(paperId), 3000);
+            document.getElementById('loading-status').textContent = '논문 분석 중... 몇 분 정도 소요될 수 있습니다.';
+        } else if (data.status === 'completed') {
+            // 처리 완료되었으면 결과 가져오기
+            stopProgressAnimation();
+            loadingOverlay.classList.add('hidden');
+            fetchPaperData(paperId);
+        } else if (data.status === 'failed') {
+            // 처리 실패
+            stopProgressAnimation();
+            loadingOverlay.classList.add('hidden');
+            alert(`논문 처리 실패: ${data.error_message || '알 수 없는 오류'}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        stopProgressAnimation();
+        loadingOverlay.classList.add('hidden');
+        alert('상태 확인 중 오류 발생: ' + error.message);
+    });
+}
+
 function handleFiles(files) {
     const file = files[0];
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -131,6 +195,9 @@ function handleFiles(files) {
     // 로딩 오버레이 표시
     loadingOverlay.classList.remove('hidden');
     document.getElementById('loading-status').textContent = '파일 업로드 중...';
+    
+    // 진행 상태 애니메이션 시작
+    startProgressAnimation();
     
     // FormData 생성
     const formData = new FormData();
@@ -151,17 +218,19 @@ function handleFiles(files) {
     })
     .then(data => {
         if (data.status === 'success') {
-            document.getElementById('loading-status').textContent = '논문 분석 중...';
+            document.getElementById('loading-status').textContent = '논문 분석 시작. 다소 시간이 소요될 수 있습니다...';
             
-            // 여기서 실제 논문 데이터를 불러오는 요청을 보냅니다
-            fetchPaperData(data.paper_id);
+            // 논문 처리 상태 확인 시작
+            checkPaperStatus(data.paper_id);
         } else {
+            stopProgressAnimation();
             loadingOverlay.classList.add('hidden');
             alert('파일 업로드에 실패했습니다: ' + (data.message || '알 수 없는 오류'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        stopProgressAnimation();
         loadingOverlay.classList.add('hidden');
         alert('파일 업로드 중 오류가 발생했습니다: ' + error.message);
     });
@@ -186,12 +255,6 @@ function fetchPaperData(paperId) {
         
         // 논문 데이터로 UI 업데이트
         updateUIWithPaperData(data, paperId);
-        
-        // 업로드 후 원본 탭으로 자동 전환
-        const originalTabButton = document.querySelector('.left-tab-button[data-tab="original"]');
-        if (originalTabButton) {
-            originalTabButton.click();
-        }
     })
     .catch(error => {
         console.error('Error:', error);
@@ -225,6 +288,12 @@ function updateUIWithPaperData(paper, paperId) {
     koreanSummaryTab.innerHTML = `<div class="markdown-body">
         ${paper.korean_summary || '<p>한국어 요약 데이터가 없습니다.</p>'}
     </div>`;
+    
+    // 업로드 후 원본 탭으로 자동 전환
+    const originalTabButton = document.querySelector('.left-tab-button[data-tab="original"]');
+    if (originalTabButton) {
+        originalTabButton.click();
+    }
     
     // 저장 버튼 표시
     const saveButtonContainer = document.getElementById('save-button-container');
@@ -290,7 +359,8 @@ function showApiKeyWarning() {
             </div>
             <div class="ml-3">
                 <p class="text-sm">
-                    API 키가 설정되지 않았습니다. 논문 분석을 위해 <a href="/mypage" class="font-medium underline">마이페이지</a>에서 API 키를 설정해주세요.
+                    <strong>API 키가 설정되지 않았습니다.</strong> 논문 분석을 위해서는 OpenAI API 키와 Upstage API 키가 모두 필요합니다. 
+                    <a href="/mypage" class="font-medium underline">마이페이지</a>에서 API 키를 설정해주세요.
                 </p>
             </div>
         </div>

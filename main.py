@@ -29,7 +29,8 @@ app.include_router(paper.router, prefix="/paper", tags=["paper"])
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     """홈페이지 렌더링"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    user = await auth_utils.get_current_user_from_cookie(request, db)
+    return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -63,7 +64,7 @@ async def paper_review(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
     
     # API 키 존재 여부 확인
-    has_api_keys = bool(user.openai_api or user.gemini_api)
+    has_api_keys = bool(user.openai_api and user.upstage_api)
     
     return templates.TemplateResponse("paper_review.html", {
         "request": request, 

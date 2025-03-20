@@ -12,7 +12,7 @@ async def update_user_info(
     request: Request,
     name: str = Form(None),
     openai_api: str = Form(None),
-    gemini_api: str = Form(None),
+    upstage_api: str = Form(None),
     db: Session = Depends(get_db)
 ):
     """사용자 정보 업데이트"""
@@ -27,8 +27,8 @@ async def update_user_info(
         update_data["name"] = name
     if openai_api:
         update_data["openai_api"] = openai_api
-    if gemini_api:
-        update_data["gemini_api"] = gemini_api
+    if upstage_api:
+        update_data["upstage_api"] = upstage_api
     
     if update_data:
         # 사용자 정보 업데이트
@@ -50,5 +50,5 @@ async def get_api_keys(
     
     return {
         "openai_api": user.openai_api,
-        "gemini_api": user.gemini_api
+        "upstage_api": user.upstage_api
     }

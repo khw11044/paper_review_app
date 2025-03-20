@@ -25,22 +25,26 @@
         <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             인공지능 논문을 읽고, 번역하고, 이해하는 가장 쉬운 방법
         </p>
-
         <div class="flex flex-wrap justify-center gap-4">
             {% if request.cookies.get("access_token") %}
-            <a href="/paper-review" class="bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-green-500 transition">
-                논문 읽기
-            </a>
+                {% if user and user.openai_api and user.upstage_api %}
+                <a href="/paper-review" class="bg-green-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-green-500 transition">
+                    논문 읽기
+                </a>
+                {% else %}
+                <a href="/mypage" class="bg-gray-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-600 transition">
+                    API 키 설정
+                </a>
+                {% endif %}
             {% else %}
-            <a href="/login" class="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-100 transition">
-                로그인하기
-            </a>
-            <a href="/register" class="bg-indigo-800 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition">
-                회원가입
-            </a>
+                <a href="/login" class="bg-white text-indigo-600 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-100 transition">
+                    로그인하기
+                </a>
+                <a href="/register" class="bg-indigo-800 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition">
+                    회원가입
+                </a>
             {% endif %}
         </div>
-
     </div>
 </section>
 

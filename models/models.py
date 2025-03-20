@@ -11,7 +11,7 @@ class User(Base):
     name = Column(String)
     hashed_password = Column(String)
     openai_api = Column(String, nullable=True)
-    gemini_api = Column(String, nullable=True)
+    upstage_api = Column(String, nullable=True) 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -27,9 +27,11 @@ class Paper(Base):
     translation = Column(Text, nullable=True)
     english_summary = Column(Text, nullable=True)  # 영어 요약 필드 추가
     korean_summary = Column(Text, nullable=True)   # 한국어 요약 필드 추가
+    references = Column(Text, nullable=True)
     pdf_path = Column(String, nullable=True)
+    processing_status = Column(String, nullable=True)  # 처리 상태 필드 추가 (processing, completed, failed)
+    error_message = Column(Text, nullable=True)        # 오류 메시지 필드 추가
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     user = relationship("User", back_populates="papers")
-
