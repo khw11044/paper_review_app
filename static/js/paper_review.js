@@ -1,14 +1,8 @@
 // paper_review.js
 
-// 헬퍼 함수: loading-overlay 요소 가져오기
+// 헬퍼 함수: 페이지에서 loading-overlay 요소를 반환
 function getLoadingOverlay() {
     return document.getElementById('loading-overlay');
-  }
-  
-  // 헬퍼 함수: 마크다운을 HTML로 렌더링 (Marked.js 사용)
-  function renderMarkdown(mdText) {
-    if (!mdText) return '<p>내용이 없습니다.</p>';
-    return marked(mdText); // marked(...) 함수는 Marked.js에서 제공
   }
   
   document.addEventListener('DOMContentLoaded', function() {
@@ -17,9 +11,10 @@ function getLoadingOverlay() {
       showApiKeyWarning();
     }
   
-    // 왼쪽 탭 전환
+    // 왼쪽 탭 전환 기능
     const leftTabButtons = document.querySelectorAll('.left-tab-button');
     const leftTabContents = document.querySelectorAll('.left-tab-content');
+  
     leftTabButtons.forEach(button => {
       button.addEventListener('click', () => {
         leftTabButtons.forEach(btn => {
@@ -39,9 +34,10 @@ function getLoadingOverlay() {
       });
     });
   
-    // 오른쪽 탭 전환
+    // 오른쪽 탭 전환 기능
     const rightTabButtons = document.querySelectorAll('.right-tab-button');
     const rightTabContents = document.querySelectorAll('.right-tab-content');
+  
     rightTabButtons.forEach(button => {
       button.addEventListener('click', () => {
         rightTabButtons.forEach(btn => {
@@ -61,15 +57,16 @@ function getLoadingOverlay() {
       });
     });
   
-    // PDF 업로드 관련 요소
+    // PDF 파일 업로드 처리
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('pdf-upload');
+    // loadingOverlay는 getLoadingOverlay() 함수로 가져옵니다.
   
     if (dropZone && fileInput) {
-      // 드래그 이벤트 방지
       ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
       });
+  
       function preventDefaults(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -98,7 +95,7 @@ function getLoadingOverlay() {
       });
     }
   
-    // 저장 버튼
+    // 저장 버튼 이벤트
     const saveButton = document.getElementById('save-button');
     if (saveButton) {
       saveButton.addEventListener('click', function() {
@@ -110,7 +107,7 @@ function getLoadingOverlay() {
     }
   });
   
-  // 진행 상태 애니메이션
+  // 진행 상태 애니메이션 함수들
   let progressInterval;
   function startProgressAnimation() {
     let progress = 5;
@@ -131,7 +128,7 @@ function getLoadingOverlay() {
     }, 1000);
   }
   
-  // PDF 처리 상태 확인
+  // PDF 처리 상태 확인 함수
   function checkPaperStatus(paperId) {
     const loadingOverlay = getLoadingOverlay();
     fetch(`/paper/status/${paperId}`, {
@@ -164,24 +161,24 @@ function getLoadingOverlay() {
     });
   }
   
-  // 파일 업로드
+  // 파일 처리 및 업로드 함수
   function handleFiles(files) {
     const file = files[0];
     const loadingOverlay = getLoadingOverlay();
-  
+    
     if (file.type !== 'application/pdf') {
       alert('PDF 파일만 업로드할 수 있습니다.');
       return;
     }
-  
+    
     loadingOverlay.classList.remove('hidden');
     document.getElementById('loading-status').textContent = '파일 업로드 중...';
     startProgressAnimation();
-  
+    
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', file.name.replace('.pdf', ''));
-  
+    
     fetch('/paper/upload', {
       method: 'POST',
       body: formData,
@@ -209,7 +206,7 @@ function getLoadingOverlay() {
     });
   }
   
-  // 논문 데이터 가져오기 (마크다운)
+  // 논문 데이터 가져오기
   function fetchPaperData(paperId) {
     const loadingOverlay = getLoadingOverlay();
     fetch(`/paper/data/${paperId}`, {
@@ -231,53 +228,51 @@ function getLoadingOverlay() {
     });
   }
   
-  // UI 업데이트 (마크다운 -> HTML)
+  // UI 업데이트: 각 탭에 마크다운 콘텐츠 표시
   function updateUIWithPaperData(paper, paperId) {
     const originalTab = document.getElementById('original-tab');
     originalTab.innerHTML = `<div class="markdown-body">
-        ${renderMarkdown(paper.original_content)}
+        ${paper.original_content || '<p>원본 내용이 없습니다.</p>'}
     </div>`;
-  
+    
     const englishSummaryTab = document.getElementById('english-summary-tab');
     englishSummaryTab.innerHTML = `<div class="markdown-body">
-        ${renderMarkdown(paper.english_summary)}
+        ${paper.english_summary || '<p>영어 요약 데이터가 없습니다.</p>'}
     </div>`;
-  
+    
     const translationTab = document.getElementById('translation-tab');
     translationTab.innerHTML = `<div class="markdown-body">
-        ${renderMarkdown(paper.translation)}
+        ${paper.translation || '<p>번역 데이터가 없습니다.</p>'}
     </div>`;
-  
+    
     const koreanSummaryTab = document.getElementById('korean-summary-tab');
     koreanSummaryTab.innerHTML = `<div class="markdown-body">
-        ${renderMarkdown(paper.korean_summary)}
+        ${paper.korean_summary || '<p>한국어 요약 데이터가 없습니다.</p>'}
     </div>`;
-  
-    // 원본 탭 클릭 상태로 초기화
+    
     const originalTabButton = document.querySelector('.left-tab-button[data-tab="original"]');
     if (originalTabButton) originalTabButton.click();
-  
-    // 저장 버튼 활성화
+    
     const saveButtonContainer = document.getElementById('save-button-container');
     saveButtonContainer.classList.remove('hidden');
-  
+    
     const saveButton = document.getElementById('save-button');
     saveButton.setAttribute('data-paper-id', paperId);
   }
   
-  // 저장
+  // 논문 분석 결과 저장 함수
   function savePaperAnalysis(paperId) {
     const originalContent = document.querySelector('#original-tab .markdown-body')?.innerHTML || '';
     const englishSummary = document.querySelector('#english-summary-tab .markdown-body')?.innerHTML || '';
     const translation = document.querySelector('#translation-tab .markdown-body')?.innerHTML || '';
     const koreanSummary = document.querySelector('#korean-summary-tab .markdown-body')?.innerHTML || '';
-  
+    
     const formData = new FormData();
     formData.append('original_content', originalContent);
     formData.append('english_summary', englishSummary);
     formData.append('translation', translation);
     formData.append('korean_summary', koreanSummary);
-  
+    
     fetch(`/paper/save/${paperId}`, {
       method: 'POST',
       body: formData,
@@ -307,7 +302,6 @@ function getLoadingOverlay() {
     });
   }
   
-  // API 키 경고
   function showApiKeyWarning() {
     const warningDiv = document.createElement('div');
     warningDiv.className = 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4';
@@ -324,6 +318,7 @@ function getLoadingOverlay() {
             </div>
         </div>
     `;
+    
     const contentContainer = document.querySelector('.paper-container');
     contentContainer.parentNode.insertBefore(warningDiv, contentContainer);
   }

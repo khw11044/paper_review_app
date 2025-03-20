@@ -104,6 +104,7 @@ trans_prompt = """You are a translator specializing in academic papers.
     6. Be sure to maintain the markdown format and precede each section heading and subheading with # or ##.
     7. If it's a math formula, write it in Markdown latex format.
     8. 한국어로 '요약' 이라는 제목은 빼주세요. 요약된 내용만 넣어주세요.
+    9. 제목은 절대 한국어로 번역하지 말고 영어 제목 그대로 유지하세요.
     
     CONTEXT:
     {context}

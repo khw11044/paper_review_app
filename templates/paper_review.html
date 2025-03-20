@@ -22,7 +22,6 @@
         <div class="flex-1 overflow-y-auto p-4 relative">
             <!-- 업로드 탭 내용 -->
             <div id="upload-tab" class="left-tab-content active h-full flex items-center justify-center">
-                <!-- PDF 업로드 영역 -->
                 <div id="drop-zone" class="drop-zone w-4/5 h-3/4 flex flex-col items-center justify-center p-6">
                     <i class="fas fa-file-pdf text-6xl text-gray-400 mb-6"></i>
                     <p class="text-center text-gray-500 text-lg mb-4">PDF 파일을 여기에 드래그하거나</p>
@@ -31,8 +30,7 @@
                     </label>
                     <input id="pdf-upload" type="file" accept=".pdf" class="hidden">
                 </div>
-                
-                <!-- 로딩 오버레이 (처음에는 숨김) -->
+
                 <div id="loading-overlay" class="loading-overlay absolute inset-0 flex flex-col items-center justify-center hidden">
                     <div class="spinner mb-4"></div>
                     <p id="loading-status" class="text-gray-700 font-medium">논문 분석 중...</p>
@@ -43,37 +41,24 @@
                 </div>
             </div>
             
-            <!-- 원본 탭 내용 -->
+            <!-- 원본 탭 내용 (파일 업로드 제거) -->
             <div id="original-tab" class="left-tab-content hidden">
-                {% if paper and paper.original_content %}
-                <div class="markdown-body">
-                    {{ paper.original_content | safe }}
+                <div id="original-content" class="markdown-body">
+                    {{ paper.original_content | safe if paper else "<p>PDF 파일을 업로드하면 원본 내용이 여기에 표시됩니다.</p>" }}
                 </div>
-                {% else %}
-                <div class="h-full flex items-center justify-center text-gray-500">
-                    <p>PDF 파일을 업로드하면 원본 내용이 여기에 표시됩니다.</p>
-                </div>
-                {% endif %}
             </div>
-            
-            <!-- 영어 요약 탭 내용 -->
+
+            <!-- 영어 요약 탭 내용 (파일 업로드 제거) -->
             <div id="english-summary-tab" class="left-tab-content hidden">
-                {% if paper and paper.english_summary %}
-                <div class="markdown-body">
-                    {{ paper.english_summary | safe }}
+                <div id="english-summary-content" class="markdown-body">
+                    {{ paper.english_summary | safe if paper else "<p>PDF 파일을 업로드하면 영어 요약 결과가 여기에 표시됩니다.</p>" }}
                 </div>
-                {% else %}
-                <div class="h-full flex items-center justify-center text-gray-500">
-                    <p>PDF 파일을 업로드하면 영어 요약 결과가 여기에 표시됩니다.</p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
     
     <!-- 오른쪽 패널 - 번역, 한국어 요약 -->
     <div class="w-full md:w-1/2 flex flex-col">
-        <!-- 탭 메뉴 - 오른쪽 -->
         <div class="bg-white border-b border-gray-200">
             <div class="flex">
                 <button class="right-tab-button px-4 py-3 font-medium text-sm focus:outline-none border-b-2 border-indigo-600 text-indigo-600" data-tab="translation">번역</button>
@@ -81,36 +66,23 @@
             </div>
         </div>
         
-        <!-- 탭 콘텐츠 - 오른쪽 -->
         <div class="flex-1 overflow-y-auto relative">
             <!-- 번역 탭 -->
             <div id="translation-tab" class="right-tab-content active p-4">
-                {% if paper and paper.translation %}
-                <div class="markdown-body">
-                    {{ paper.translation | safe }}
+                <div id="translation-content" class="markdown-body">
+                    {{ paper.translation | safe if paper else "<p>PDF 파일을 업로드하면 번역 결과가 여기에 표시됩니다.</p>" }}
                 </div>
-                {% else %}
-                <div class="h-full flex items-center justify-center text-gray-500">
-                    <p>PDF 파일을 업로드하면 번역 결과가 여기에 표시됩니다.</p>
-                </div>
-                {% endif %}
             </div>
             
             <!-- 한국어 요약 탭 -->
             <div id="korean-summary-tab" class="right-tab-content hidden p-4">
-                {% if paper and paper.korean_summary %}
-                <div class="markdown-body">
-                    {{ paper.korean_summary | safe }}
+                <div id="korean-summary-content" class="markdown-body">
+                    {{ paper.korean_summary | safe if paper else "<p>PDF 파일을 업로드하면 한국어 요약 결과가 여기에 표시됩니다.</p>" }}
                 </div>
-                {% else %}
-                <div class="h-full flex items-center justify-center text-gray-500">
-                    <p>PDF 파일을 업로드하면 한국어 요약 결과가 여기에 표시됩니다.</p>
-                </div>
-                {% endif %}
             </div>
         </div>
-        
-        <!-- 저장 버튼 (분석 결과가 있을 때만 표시) -->
+
+        <!-- 저장 버튼 -->
         <div id="save-button-container" class="p-4 bg-gray-50 border-t border-gray-200 {% if not paper or not paper.translation %}hidden{% endif %}">
             <button id="save-button" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition flex items-center justify-center">
                 <i class="fas fa-save mr-2"></i> 저장하기
