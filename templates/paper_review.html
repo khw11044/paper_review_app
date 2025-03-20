@@ -68,3 +68,49 @@
                     <p>PDF 파일을 업로드하면 번역 결과가 여기에 표시됩니다.</p>
                 </div>
                 {% endif %}
+            </div>
+            
+            <!-- 요약 탭 -->
+            <div id="summary-tab" class="tab-content p-4">
+                {% if paper and paper.summary %}
+                <div class="markdown-body">
+                    {{ paper.summary | safe }}
+                </div>
+                {% else %}
+                <div class="h-full flex items-center justify-center text-gray-500">
+                    <p>PDF 파일을 업로드하면 요약 결과가 여기에 표시됩니다.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- 참조 탭 -->
+            <div id="references-tab" class="tab-content p-4">
+                {% if paper and paper.references %}
+                <div class="markdown-body">
+                    {{ paper.references | safe }}
+                </div>
+                {% else %}
+                <div class="h-full flex items-center justify-center text-gray-500">
+                    <p>PDF 파일을 업로드하면 참조 분석 결과가 여기에 표시됩니다.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 저장 버튼 (분석 결과가 있을 때만 표시) -->
+        <div id="save-button-container" class="p-4 bg-gray-50 border-t border-gray-200 {% if not paper or not paper.translation %}hidden{% endif %}">
+            <button id="save-button" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition flex items-center justify-center">
+                <i class="fas fa-save mr-2"></i> 저장하기
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 템플릿에서 Python 변수를 JavaScript로 전달
+    const hasApiKeys = {{ has_api_keys|default('false')|tojson }};
+</script>
+<script src="{{ url_for('static', path='/js/paper_review.js') }}"></script>
+{% endblock %}

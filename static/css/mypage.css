@@ -1,0 +1,11 @@
+/* static/css/mypage.css */
+.sidebar {
+    height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+.paper-item {
+    transition: all 0.2s ease;
+}
+.paper-item:hover {
+    background-color: #f3f4f6;
+}

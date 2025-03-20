@@ -21,7 +21,7 @@
                     <li><a href="/" class="hover:text-indigo-200 transition">홈</a></li>
                     {% if request.cookies.get("access_token") %}
                     <li><a href="/mypage" class="hover:text-indigo-200 transition">마이페이지</a></li>
-                    <li><a href="/paper/review-page" class="hover:text-indigo-200 transition">논문 읽기</a></li>
+                    <li><a href="/paper-review" class="hover:text-indigo-200 transition">논문 읽기</a></li>
                     <li><a href="/auth/logout" class="hover:text-indigo-200 transition">로그아웃</a></li>
                     {% else %}
                     <li><a href="/login" class="hover:text-indigo-200 transition">로그인</a></li>

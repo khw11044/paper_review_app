@@ -55,7 +55,7 @@ async def mypage(request: Request, db: Session = Depends(get_db)):
         "papers": papers
     })
 
-@app.get("/paper/review", response_class=HTMLResponse)
+@app.get("/paper-review", response_class=HTMLResponse)
 async def paper_review(request: Request, db: Session = Depends(get_db)):
     """논문 리뷰 페이지 렌더링"""
     user = await auth_utils.get_current_user_from_cookie(request, db)
