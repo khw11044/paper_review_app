@@ -233,6 +233,7 @@ def extract_page_elements(state: GraphState):
             element["html"] = str(soup)
         
         return element
+    
     def process_figure_image(soup, element, output_folder):
         """이미지 처리를 위한 내부 함수"""
         img_tag = soup.find("img")
