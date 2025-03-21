@@ -149,3 +149,45 @@ async def get_paper_data(request: Request, paper_id: int, db: Session = Depends(
         "translation": paper.translation,
         "korean_summary": paper.korean_summary
     }
+
+# 새로 추가된 엔드포인트
+@router.post("/save/{paper_id}")
+async def save_paper_analysis(
+    request: Request,
+    paper_id: int, 
+    original_content: str = Form(""),
+    english_summary: str = Form(""),
+    translation: str = Form(""),
+    korean_summary: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    """논문 분석 결과 저장 엔드포인트"""
+    user = await auth_utils.get_current_user_from_cookie(request, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    
+    paper = db.query(models.Paper).filter(
+        models.Paper.id == paper_id,
+        models.Paper.user_id == user.id
+    ).first()
+    
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+    
+    # 폼 데이터로 Paper 모델 업데이트
+    if original_content:
+        paper.original_content = original_content
+    if english_summary:
+        paper.english_summary = english_summary
+    if translation:
+        paper.translation = translation
+    if korean_summary:
+        paper.korean_summary = korean_summary
+    
+    # 처리 상태를 'completed'로 설정
+    paper.processing_status = "completed"
+    
+    # 변경사항 DB에 반영
+    db.commit()
+    
+    return {"status": "success", "message": "Paper analysis saved successfully"}
