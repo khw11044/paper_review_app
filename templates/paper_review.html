@@ -44,14 +44,14 @@
             <!-- 원본 탭 내용 (파일 업로드 제거) -->
             <div id="original-tab" class="left-tab-content hidden">
                 <div id="original-content" class="markdown-body">
-                    {{ paper.original_content | safe if paper else "<p>PDF 파일을 업로드하면 원본 내용이 여기에 표시됩니다.</p>" }}
+                    {{ paper.original_content | safe if paper else "PDF 파일을 업로드하면 원본 내용이 여기에 표시됩니다." }}
                 </div>
             </div>
 
             <!-- 영어 요약 탭 내용 (파일 업로드 제거) -->
             <div id="english-summary-tab" class="left-tab-content hidden">
                 <div id="english-summary-content" class="markdown-body">
-                    {{ paper.english_summary | safe if paper else "<p>PDF 파일을 업로드하면 영어 요약 결과가 여기에 표시됩니다.</p>" }}
+                    {{ paper.english_summary | safe if paper else "PDF 파일을 업로드하면 영어 요약 결과가 여기에 표시됩니다." }}
                 </div>
             </div>
         </div>
@@ -70,14 +70,14 @@
             <!-- 번역 탭 -->
             <div id="translation-tab" class="right-tab-content active p-4">
                 <div id="translation-content" class="markdown-body">
-                    {{ paper.translation | safe if paper else "<p>PDF 파일을 업로드하면 번역 결과가 여기에 표시됩니다.</p>" }}
+                    {{ paper.translation | safe if paper else "PDF 파일을 업로드하면 번역 결과가 여기에 표시됩니다." }}
                 </div>
             </div>
             
             <!-- 한국어 요약 탭 -->
             <div id="korean-summary-tab" class="right-tab-content hidden p-4">
                 <div id="korean-summary-content" class="markdown-body">
-                    {{ paper.korean_summary | safe if paper else "<p>PDF 파일을 업로드하면 한국어 요약 결과가 여기에 표시됩니다.</p>" }}
+                    {{ paper.korean_summary | safe if paper else "PDF 파일을 업로드하면 한국어 요약 결과가 여기에 표시됩니다." }}
                 </div>
             </div>
         </div>
