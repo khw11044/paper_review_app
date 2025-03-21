@@ -5,6 +5,7 @@ function getLoadingOverlay() {
   return document.getElementById('loading-overlay');
 }
 
+// DOMContentLoaded 이벤트
 document.addEventListener('DOMContentLoaded', function() {
   // API 키 확인
   if (typeof hasApiKeys !== 'undefined' && !hasApiKeys) {
@@ -14,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // 왼쪽 탭 전환 기능
   const leftTabButtons = document.querySelectorAll('.left-tab-button');
   const leftTabContents = document.querySelectorAll('.left-tab-content');
-
   leftTabButtons.forEach(button => {
     button.addEventListener('click', () => {
       leftTabButtons.forEach(btn => {
@@ -27,17 +27,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const tabId = button.getAttribute('data-tab');
       leftTabContents.forEach(content => {
         content.classList.add('hidden');
-        content.classList.remove('active');
       });
+      // 각 탭은 id 형식: upload-tab, original-tab, english-summary-tab 등
       document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-      document.getElementById(`${tabId}-tab`).classList.add('active');
     });
   });
 
   // 오른쪽 탭 전환 기능
   const rightTabButtons = document.querySelectorAll('.right-tab-button');
   const rightTabContents = document.querySelectorAll('.right-tab-content');
-
   rightTabButtons.forEach(button => {
     button.addEventListener('click', () => {
       rightTabButtons.forEach(btn => {
@@ -50,34 +48,29 @@ document.addEventListener('DOMContentLoaded', function() {
       const tabId = button.getAttribute('data-tab');
       rightTabContents.forEach(content => {
         content.classList.add('hidden');
-        content.classList.remove('active');
       });
       document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-      document.getElementById(`${tabId}-tab`).classList.add('active');
     });
   });
 
-  // PDF 파일 업로드 처리 - 업로드 탭에서만 작동하도록 유지
+  // PDF 파일 업로드 처리 (업로드 탭 전용)
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('pdf-upload');
-
+  const loadingOverlay = getLoadingOverlay();
   if (dropZone && fileInput) {
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
       dropZone.addEventListener(eventName, preventDefaults, false);
     });
-
     function preventDefaults(e) {
       e.preventDefault();
       e.stopPropagation();
     }
-
     ['dragenter', 'dragover'].forEach(eventName => {
       dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
     });
     ['dragleave', 'drop'].forEach(eventName => {
       dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
     });
-
     dropZone.addEventListener('drop', handleDrop, false);
     function handleDrop(e) {
       const dt = e.dataTransfer;
@@ -86,7 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFiles(files);
       }
     }
-
     fileInput.addEventListener('change', function() {
       if (fileInput.files.length) {
         handleFiles(fileInput.files);
@@ -164,20 +156,16 @@ function checkPaperStatus(paperId) {
 function handleFiles(files) {
   const file = files[0];
   const loadingOverlay = getLoadingOverlay();
-  
   if (file.type !== 'application/pdf') {
     alert('PDF 파일만 업로드할 수 있습니다.');
     return;
   }
-  
   loadingOverlay.classList.remove('hidden');
   document.getElementById('loading-status').textContent = '파일 업로드 중...';
   startProgressAnimation();
-  
   const formData = new FormData();
   formData.append('file', file);
   formData.append('title', file.name.replace('.pdf', ''));
-  
   fetch('/paper/upload', {
     method: 'POST',
     body: formData,
@@ -189,12 +177,12 @@ function handleFiles(files) {
   })
   .then(data => {
     if (data.status === 'success') {
-      document.getElementById('loading-status').textContent = '논문 분석 시작. 다소 시간이 소요될 수 있습니다...';
+      document.getElementById('loading-status').textContent = '논문 분석 시작...';
       checkPaperStatus(data.paper_id);
     } else {
       stopProgressAnimation();
       loadingOverlay.classList.add('hidden');
-      alert('파일 업로드에 실패했습니다: ' + (data.message || '알 수 없는 오류'));
+      alert('파일 업로드 실패: ' + (data.message || '알 수 없는 오류'));
     }
   })
   .catch(error => {
@@ -205,7 +193,7 @@ function handleFiles(files) {
   });
 }
 
-// 논문 데이터 가져오기
+// 논문 데이터 가져오기 및 UI 업데이트 (마크다운 데이터 -> HTML 변환)
 function fetchPaperData(paperId) {
   const loadingOverlay = getLoadingOverlay();
   fetch(`/paper/data/${paperId}`, {
@@ -227,35 +215,28 @@ function fetchPaperData(paperId) {
   });
 }
 
-// UI 업데이트: 각 탭에 마크다운 콘텐츠 표시
+// UI 업데이트: 각 탭에 마크다운 콘텐츠를 HTML로 렌더링하여 표시
 function updateUIWithPaperData(paper, paperId) {
-  const originalTab = document.getElementById('original-tab');
-  originalTab.innerHTML = `<div class="markdown-body">
-      ${paper.original_content || '<p>원본 내용이 없습니다.</p>'}
-  </div>`;
-  
-  const englishSummaryTab = document.getElementById('english-summary-tab');
-  englishSummaryTab.innerHTML = `<div class="markdown-body">
-      ${paper.english_summary || '<p>영어 요약 데이터가 없습니다.</p>'}
-  </div>`;
-  
-  const translationTab = document.getElementById('translation-tab');
-  translationTab.innerHTML = `<div class="markdown-body">
-      ${paper.translation || '<p>번역 데이터가 없습니다.</p>'}
-  </div>`;
-  
-  const koreanSummaryTab = document.getElementById('korean-summary-tab');
-  koreanSummaryTab.innerHTML = `<div class="markdown-body">
-      ${paper.korean_summary || '<p>한국어 요약 데이터가 없습니다.</p>'}
-  </div>`;
-  
-  // 원본 탭으로 자동 전환
+  const originalContentDiv = document.getElementById('original-content');
+  originalContentDiv.innerHTML = marked.parse(paper.original_content || '원본 내용이 없습니다.');
+
+  const englishSummaryDiv = document.getElementById('english-summary-content');
+  englishSummaryDiv.innerHTML = marked.parse(paper.english_summary || '영어 요약 데이터가 없습니다.');
+
+  // 오른쪽 탭 콘텐츠 (번역, 한국어 요약) - 해당 탭에도 마크다운 렌더링 적용
+  const translationContentDiv = document.getElementById('translation-content');
+  translationContentDiv.innerHTML = marked.parse(paper.translation || '번역 데이터가 없습니다.');
+
+  const koreanSummaryDiv = document.getElementById('korean-summary-content');
+  koreanSummaryDiv.innerHTML = marked.parse(paper.korean_summary || '한국어 요약 데이터가 없습니다.');
+
+  // 탭 전환: 기본적으로 원본 탭을 활성화
   const originalTabButton = document.querySelector('.left-tab-button[data-tab="original"]');
   if (originalTabButton) originalTabButton.click();
-  
+
+  // 저장 버튼 활성화
   const saveButtonContainer = document.getElementById('save-button-container');
   saveButtonContainer.classList.remove('hidden');
-  
   const saveButton = document.getElementById('save-button');
   saveButton.setAttribute('data-paper-id', paperId);
 }
@@ -266,13 +247,13 @@ function savePaperAnalysis(paperId) {
   const englishSummary = document.querySelector('#english-summary-tab .markdown-body')?.innerHTML || '';
   const translation = document.querySelector('#translation-tab .markdown-body')?.innerHTML || '';
   const koreanSummary = document.querySelector('#korean-summary-tab .markdown-body')?.innerHTML || '';
-  
+
   const formData = new FormData();
   formData.append('original_content', originalContent);
   formData.append('english_summary', englishSummary);
   formData.append('translation', translation);
   formData.append('korean_summary', koreanSummary);
-  
+
   fetch(`/paper/save/${paperId}`, {
     method: 'POST',
     body: formData,
@@ -302,23 +283,23 @@ function savePaperAnalysis(paperId) {
   });
 }
 
+// API 키 경고 표시 함수
 function showApiKeyWarning() {
   const warningDiv = document.createElement('div');
   warningDiv.className = 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4';
   warningDiv.innerHTML = `
-      <div class="flex">
-          <div class="flex-shrink-0">
-              <i class="fas fa-exclamation-triangle"></i>
-          </div>
-          <div class="ml-3">
-              <p class="text-sm">
-                  <strong>API 키가 설정되지 않았습니다.</strong> 논문 분석을 위해서는 OpenAI API 키와 Upstage API 키가 모두 필요합니다. 
-                  <a href="/mypage" class="font-medium underline">마이페이지</a>에서 API 키를 설정해주세요.
-              </p>
-          </div>
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <i class="fas fa-exclamation-triangle"></i>
       </div>
+      <div class="ml-3">
+        <p class="text-sm">
+          <strong>API 키가 설정되지 않았습니다.</strong> 논문 분석을 위해서는 OpenAI API 키와 Upstage API 키가 모두 필요합니다.
+          <a href="/mypage" class="font-medium underline">마이페이지</a>에서 API 키를 설정해주세요.
+        </p>
+      </div>
+    </div>
   `;
-  
   const contentContainer = document.querySelector('.paper-container');
   contentContainer.parentNode.insertBefore(warningDiv, contentContainer);
 }
