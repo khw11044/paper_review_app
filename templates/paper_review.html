@@ -20,7 +20,7 @@
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 relative">
-            <!-- 업로드 탭 내용 -->
+            <!-- 업로드 탭 내용 - 여기만 업로드 UI 유지 -->
             <div id="upload-tab" class="left-tab-content active h-full flex items-center justify-center">
                 <div id="drop-zone" class="drop-zone w-4/5 h-3/4 flex flex-col items-center justify-center p-6">
                     <i class="fas fa-file-pdf text-6xl text-gray-400 mb-6"></i>
@@ -41,14 +41,14 @@
                 </div>
             </div>
             
-            <!-- 원본 탭 내용 (파일 업로드 제거) -->
+            <!-- 원본 탭 내용 - 업로드 영역 제거, 내용만 표시 -->
             <div id="original-tab" class="left-tab-content hidden">
                 <div id="original-content" class="markdown-body">
                     {{ paper.original_content | safe if paper else "<p>PDF 파일을 업로드하면 원본 내용이 여기에 표시됩니다.</p>" }}
                 </div>
             </div>
 
-            <!-- 영어 요약 탭 내용 (파일 업로드 제거) -->
+            <!-- 영어 요약 탭 내용 - 업로드 영역 제거, 내용만 표시 -->
             <div id="english-summary-tab" class="left-tab-content hidden">
                 <div id="english-summary-content" class="markdown-body">
                     {{ paper.english_summary | safe if paper else "<p>PDF 파일을 업로드하면 영어 요약 결과가 여기에 표시됩니다.</p>" }}
